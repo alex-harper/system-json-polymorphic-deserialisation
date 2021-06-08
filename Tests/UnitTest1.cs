@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using PolymorphicDeserialisationDemo;
+using PolymorphicDeserialisationDemo.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace Tests
         [SetUp]
         public void Setup()
         {
+
         }
 
         [Test]
@@ -29,19 +31,28 @@ namespace Tests
                     new BoolStepResult(){ Id = "1", Value = true},
                     new TextStepResult(){ Id = "2", Value = "some text"},
                     new ExtendedStepModel()
-                    { 
-                        Id = "3", 
-                        Value = 5, 
+                    {
+                        Id = "3",
+                        Value = 5,
                         OtherIntValue = 10,
                         OtherString = "Oh hi",
-                        DateTime = DateTime.Now
+                        DateTime = DateTime.Now,
+                        Layers = new List<ILayer>
+                        {
+                            new ALayer { Id = "a-layer", Index = 0, Is3D = false, Height= 123, InPoint = 0 },
+                            new BLayer { Id = "b-layer", Index = 0, Height= 123, Name = "blayerName", OutPoint = 100 },
+                        }
                     },                    
                 }
             };
 
             var jsonSerializerOptions = new JsonSerializerOptions()
             {
-                Converters = { new TypeDiscriminatorConverter<ISurveyStepResult>() },
+                Converters = 
+                { 
+                    new TypeDiscriminatorConverter<ISurveyStepResult>(), 
+                    new TypeDiscriminatorConverter<ILayer>() 
+                },
                 WriteIndented = true
             };
             var result = JsonSerializer.Serialize(surveyResult, jsonSerializerOptions);

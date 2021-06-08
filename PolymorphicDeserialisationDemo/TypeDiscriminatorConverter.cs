@@ -44,7 +44,7 @@ namespace PolymorphicDeserialisationDemo
                 }
 
                 var jsonObject = jsonDocument.RootElement.GetRawText();
-                var result = (T)JsonSerializer.Deserialize(jsonObject, type);
+                var result = (T)JsonSerializer.Deserialize(jsonObject, type, options);
 
                 return result;
             }
