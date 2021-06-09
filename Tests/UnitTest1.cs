@@ -50,8 +50,8 @@ namespace Tests
             {
                 Converters = 
                 { 
-                    new TypeDiscriminatorConverter<ISurveyStepResult>(), 
-                    new TypeDiscriminatorConverter<ILayer>() 
+                    new TypeDiscriminatorConverter<ISurveyStepResult>(x=>x.TypeDiscriminator), 
+                    new TypeDiscriminatorConverter<ILayer>(x=>x.TypeDiscriminator) 
                 },
                 WriteIndented = true
             };

@@ -2,6 +2,6 @@
 {
     public interface ITypeDiscriminator
     {
-        string TypeDiscriminator { get; }
+        int TypeDiscriminator { get; }
     }
 }

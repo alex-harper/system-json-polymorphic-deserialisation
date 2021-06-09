@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -10,17 +11,25 @@ namespace PolymorphicDeserialisationDemo
     /// Cloned from https://stackoverflow.com/questions/58074304/is-polymorphic-deserialization-possible-in-system-text-json/59744873#59744873
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class TypeDiscriminatorConverter<T> : JsonConverter<T> where T : ITypeDiscriminator
+    public class TypeDiscriminatorConverter<T> : JsonConverter<T>
     {
         private readonly IEnumerable<Type> _types;
+        private readonly Dictionary<string, Type> _typeMap;
+        private readonly string _typeDiscriminatorName;
 
-        public TypeDiscriminatorConverter()
+        public TypeDiscriminatorConverter(Expression<Func<T, object>> propertySelector)
         {
             var type = typeof(T);
             _types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p => type.IsAssignableFrom(p) && p.IsClass && !p.IsAbstract)
                 .ToList();
+
+            _typeDiscriminatorName = PropertyHelper.GetMemberName(propertySelector);
+
+            _typeMap = _types.ToDictionary(x => x.GetProperty(_typeDiscriminatorName)
+                                                .GetValue(Activator.CreateInstance(x))
+                                                .ToString(), x => x);
         }
 
         public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -32,12 +41,14 @@ namespace PolymorphicDeserialisationDemo
 
             using (var jsonDocument = JsonDocument.ParseValue(ref reader))
             {
-                if (!jsonDocument.RootElement.TryGetProperty(nameof(ITypeDiscriminator.TypeDiscriminator), out var typeProperty))
+                if (!jsonDocument.RootElement.TryGetProperty(_typeDiscriminatorName, out var typeProperty))
                 {
                     throw new JsonException();
                 }
 
-                var type = _types.FirstOrDefault(x => x.Name == typeProperty.GetString());
+                var rawValue = typeProperty.ToString();
+                var type = _typeMap[rawValue];
+                
                 if (type == null)
                 {
                     throw new JsonException();
@@ -53,6 +64,22 @@ namespace PolymorphicDeserialisationDemo
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
             JsonSerializer.Serialize(writer, (object)value, options);
+        }
+    }
+
+    internal static class PropertyHelper
+    {
+        public static string GetMemberName<T>(this Expression<T> expression)
+        {
+            switch (expression.Body)
+            {
+                case MemberExpression m:
+                    return m.Member.Name;
+                case UnaryExpression u when u.Operand is MemberExpression m:
+                    return m.Member.Name;
+                default:
+                    throw new NotImplementedException(expression.GetType().ToString());
+            }
         }
     }
 }

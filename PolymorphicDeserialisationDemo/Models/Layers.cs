@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace PolymorphicDeserialisationDemo.Models
 {
-    public interface ILayer : ITypeDiscriminator
-    {        
+    public interface ILayer
+    {
+        [JsonPropertyName("ty")]
+        public abstract int TypeDiscriminator { get; }
+
         public int Height { get; set; }
 
         public string Id { get; set; }
@@ -17,7 +21,7 @@ namespace PolymorphicDeserialisationDemo.Models
 
     public class ALayer : ILayer
     {
-        public string TypeDiscriminator => nameof(ALayer);
+        public int TypeDiscriminator => 1;
 
         public int InPoint { get; set; }
 
@@ -31,7 +35,7 @@ namespace PolymorphicDeserialisationDemo.Models
 
     public class BLayer : ILayer
     {
-        public string TypeDiscriminator => nameof(BLayer);
+        public int TypeDiscriminator => 2;
 
         public string Name { get; set; }
 
