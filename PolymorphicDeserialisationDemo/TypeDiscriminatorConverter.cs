@@ -16,6 +16,7 @@ namespace PolymorphicDeserialisationDemo
         private readonly IEnumerable<Type> _types;
         private readonly Dictionary<string, Type> _typeMap;
         private readonly string _typeDiscriminatorName;
+        private readonly string _typeJsonPropertyName;
 
         public TypeDiscriminatorConverter(Expression<Func<T, object>> propertySelector)
         {
@@ -24,6 +25,8 @@ namespace PolymorphicDeserialisationDemo
                 .SelectMany(s => s.GetTypes())
                 .Where(p => type.IsAssignableFrom(p) && p.IsClass && !p.IsAbstract)
                 .ToList();
+
+            _typeJsonPropertyName = PropertyHelper.GetMemberJsonName(propertySelector);
 
             _typeDiscriminatorName = PropertyHelper.GetMemberName(propertySelector);
 
@@ -41,7 +44,7 @@ namespace PolymorphicDeserialisationDemo
 
             using (var jsonDocument = JsonDocument.ParseValue(ref reader))
             {
-                if (!jsonDocument.RootElement.TryGetProperty(_typeDiscriminatorName, out var typeProperty))
+                if (!jsonDocument.RootElement.TryGetProperty(_typeJsonPropertyName, out var typeProperty))
                 {
                     throw new JsonException();
                 }
@@ -64,22 +67,6 @@ namespace PolymorphicDeserialisationDemo
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
             JsonSerializer.Serialize(writer, (object)value, options);
-        }
-    }
-
-    internal static class PropertyHelper
-    {
-        public static string GetMemberName<T>(this Expression<T> expression)
-        {
-            switch (expression.Body)
-            {
-                case MemberExpression m:
-                    return m.Member.Name;
-                case UnaryExpression u when u.Operand is MemberExpression m:
-                    return m.Member.Name;
-                default:
-                    throw new NotImplementedException(expression.GetType().ToString());
-            }
         }
     }
 }

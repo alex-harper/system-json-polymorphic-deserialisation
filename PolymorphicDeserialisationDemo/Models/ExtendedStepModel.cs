@@ -14,6 +14,6 @@ namespace PolymorphicDeserialisationDemo
         public string OtherString { get; set; }
         public DateTime DateTime { get; set; }
 
-        public List<ILayer> Layers { get; set; }
+        public List<Layer> Layers { get; set; }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PolymorphicDeserialisationDemo.Models
 {
-    public interface ILayer
+    public abstract class Layer
     {
         [JsonPropertyName("ty")]
         public abstract int TypeDiscriminator { get; }
@@ -19,31 +19,23 @@ namespace PolymorphicDeserialisationDemo.Models
         public int? Index { get; set; }
     }
 
-    public class ALayer : ILayer
+    public class ALayer : Layer
     {
-        public int TypeDiscriminator => 1;
+        [JsonPropertyName("ty")]
+        public override int TypeDiscriminator => 1;
 
         public int InPoint { get; set; }
 
         public bool Is3D { get; set; } = false;
-
-        //ILayer
-        public int Height { get; set; }
-        public string Id { get; set; }
-        public int? Index { get; set; }
     }
 
-    public class BLayer : ILayer
+    public class BLayer : Layer
     {
-        public int TypeDiscriminator => 2;
-
+        [JsonPropertyName("ty")]
+        public override int TypeDiscriminator => 2;
+        
         public string Name { get; set; }
 
-        public int OutPoint { get; set; }
-
-        //ILayer
-        public int Height { get; set; }
-        public string Id { get; set; }
-        public int? Index { get; set; }
+        public int OutPoint { get; set; }        
     }
 }

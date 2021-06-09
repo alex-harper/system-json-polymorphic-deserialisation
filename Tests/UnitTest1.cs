@@ -37,7 +37,7 @@ namespace Tests
                         OtherIntValue = 10,
                         OtherString = "Oh hi",
                         DateTime = DateTime.Now,
-                        Layers = new List<ILayer>
+                        Layers = new List<Layer>
                         {
                             new ALayer { Id = "a-layer", Index = 0, Is3D = false, Height= 123, InPoint = 0 },
                             new BLayer { Id = "b-layer", Index = 0, Height= 123, Name = "blayerName", OutPoint = 100 },
@@ -51,7 +51,7 @@ namespace Tests
                 Converters = 
                 { 
                     new TypeDiscriminatorConverter<ISurveyStepResult>(x=>x.TypeDiscriminator), 
-                    new TypeDiscriminatorConverter<ILayer>(x=>x.TypeDiscriminator) 
+                    new TypeDiscriminatorConverter<Layer>(x=>x.TypeDiscriminator) 
                 },
                 WriteIndented = true
             };
